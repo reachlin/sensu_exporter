@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -16,7 +17,7 @@ var (
 
 func main() {
 	metricPath := "/metrics"
-	http.Handle(*metricPath, prometheus.Handler())
+	http.Handle(metricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(metricsPath))
 	})
