@@ -27,6 +27,18 @@ var (
 
 type SensuCheckResult struct {
 	Client string
+	Check SensuCheck
+}
+
+type SensuCheck struct {
+	Name string
+	Duration float64
+	Executed int64
+	Subscribers []string
+	Output string
+	Status int
+	Issued int64
+	Interval int
 }
 
 
@@ -35,7 +47,10 @@ func main() {
 	go serveMetrics()
 
 	for {
-		log.Fatal(getSensuResults(*sensuAPI))
+		err := getSensuResults(*sensuAPI)
+		if err != nil {
+			log.Fatal(err)
+		}
 		time.Sleep(3*time.Second)
 	}
 }
