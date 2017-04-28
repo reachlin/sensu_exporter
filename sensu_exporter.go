@@ -52,8 +52,8 @@ func serveMetrics() {
 
 func getSensuResults(url string) error {
 	log.Infoln("getSensuResults", url)
-	results := []SensuCheckResult{}
-	err := getJson(url, &results)
+	results := []SensuCheckResult
+	err := getJson(url, results)
 	if err != nil {
 		return err
 	}
