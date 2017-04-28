@@ -45,16 +45,18 @@ func main() {
 }
 
 func getSensuResults(url string) error {
+	log.Infoln("getSensuResults", url)
 	results := []SensuCheckResult{}
 	err := getJson(url, results)
 	if err != nil {
 		return err
 	}
-	log.Infoln(fmt.Sprintln(results))
+	log.Infoln("...", fmt.Sprintln(results))
 	return nil
 }
 
 func getJson(url string, obj interface{}) error {
+	log.Infoln("getJson", url)
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		return err
