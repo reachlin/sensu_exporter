@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -54,10 +55,10 @@ func getSensuResults(url string) error {
 }
 
 func getJson(url string, obj interface{}) error {
-	resp, err := httpClient.Get(uri)
+	resp, err := httpClient.Get(url)
 	if err != nil {
-		return error
+		return err
 	}
 	defer resp.Body.Close()
-	return json.NewDecoder(r.Body).Decode(target)
+	return json.NewDecoder(resp.Body).Decode(obj)
 }
