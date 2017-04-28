@@ -19,7 +19,7 @@ func main() {
 	metricPath := "/metrics"
 	http.Handle(metricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(metricsPath))
+		w.Write([]byte(metricPath))
 	})
 	log.Infoln("Listening on", *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
