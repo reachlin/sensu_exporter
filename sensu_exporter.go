@@ -29,7 +29,18 @@ type SensuCheckResult struct {
 	Client string
 }
 
+
 func main() {
+
+	go serveMetrics()
+
+	for {
+		log.Fatal(getSensuResults(*sensuAPI))
+		time.Sleep(3*time.Second)
+	}
+}
+
+func serveMetrics() {
 	metricPath := "/metrics"
 	http.Handle(metricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -37,11 +48,6 @@ func main() {
 	})
 	log.Infoln("Listening on", *listenAddress)
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
-
-	for {
-		log.Fatal(getSensuResults(*sensuAPI))
-		time.Sleep(3*time.Second)
-	}
 }
 
 func getSensuResults(url string) error {
