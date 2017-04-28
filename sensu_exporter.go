@@ -20,7 +20,7 @@ var (
 		"Address to listen on for web interface and telemetry.",
 	)
 	sensuAPI = flag.String(
-		"api", "http://10.140.131.43:4567",
+		"api", "http://10.140.131.43:4567/results",
 		"Address to Sensu API.",
 	)
 )
