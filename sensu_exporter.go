@@ -24,7 +24,7 @@ var (
 	)
 )
 
-type SensuCheckResult {
+type SensuCheckResult struct {
 	Client string
 }
 
