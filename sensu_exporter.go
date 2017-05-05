@@ -13,7 +13,7 @@ import (
 
 var (
 	httpClient = &http.Client{
-		Timeout: 3*time.Second,
+		Timeout: 3 * time.Second,
 	}
 	listenAddress = flag.String(
 		"listen", ":9104",
@@ -27,20 +27,19 @@ var (
 
 type SensuCheckResult struct {
 	Client string
-	Check SensuCheck
+	Check  SensuCheck
 }
 
 type SensuCheck struct {
-	Name string
-	Duration float64
-	Executed int64
+	Name        string
+	Duration    float64
+	Executed    int64
 	Subscribers []string
-	Output string
-	Status int
-	Issued int64
-	Interval int
+	Output      string
+	Status      int
+	Issued      int64
+	Interval    int
 }
-
 
 func main() {
 
@@ -51,7 +50,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		time.Sleep(3*time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
