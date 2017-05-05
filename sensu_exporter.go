@@ -23,6 +23,7 @@ var (
 		"api", "http://10.140.131.43:4567/results",
 		"Address to Sensu API.",
 	)
+	metricsExported map[string]prometheus.Gauge = make(map[string]prometheus.Gauge)
 )
 
 type SensuCheckResult struct {
@@ -73,6 +74,18 @@ func getSensuResults(url string) error {
 	}
 	for i, result := range results {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
+		elem, ok = metricsExported[result.Check.Name]
+		if ok {
+			elem.Set(float64(result.Check.Status))
+		} else {
+			gauge := prometheus.NewGauge(prometheus.GaugeOpts{
+				Name: result.Check.Name,
+				Help: "Sensu Check Status",
+			})
+			gauge.Set(float64(result.Check.Status))
+			prometheus.MustRegister(gauge)
+			metricsExported[result.Check.Name] = gauge
+		}
 	}
 	return nil
 }
