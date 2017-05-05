@@ -73,7 +73,7 @@ func getSensuResults(url string) error {
 		return err
 	}
 	for i, result := range results {
-		log.Infoln("...", fmt.Sprintf("%d, %v", i, result.Check.Name))
+		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Output))
 	}
 	return nil
 }
