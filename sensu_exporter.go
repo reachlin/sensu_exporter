@@ -74,17 +74,18 @@ func getSensuResults(url string) error {
 	}
 	for i, result := range results {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
-		elem, ok := metricsExported[result.Check.Name]
+		checkName := strings.Replace(result.Check.Name, "-", "_", -1)
+		elem, ok := metricsExported[checkName]
 		if ok {
 			elem.Set(float64(result.Check.Status))
 		} else {
 			gauge := prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: result.Check.Name,
+				Name: checkName,
 				Help: "Sensu Check Status",
 			})
 			gauge.Set(float64(result.Check.Status))
 			prometheus.MustRegister(gauge)
-			metricsExported[result.Check.Name] = gauge
+			metricsExported[checkName] = gauge
 		}
 	}
 	return nil
