@@ -74,7 +74,7 @@ func getSensuResults(url string) error {
 	}
 	for i, result := range results {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
-		elem, ok = metricsExported[result.Check.Name]
+		elem, ok := metricsExported[result.Check.Name]
 		if ok {
 			elem.Set(float64(result.Check.Status))
 		} else {
