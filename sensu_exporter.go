@@ -24,7 +24,13 @@ var (
 		"api", "http://10.140.131.43:4567/results",
 		"Address to Sensu API.",
 	)
-	metricsExported map[string]prometheus.Gauge = make(map[string]prometheus.Gauge)
+	checkStatus = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "sensu_check_status",
+			Help: "Sensu Check Status(0:OK)",
+		},
+		[]string{"server", "client", "check_name"},
+	)
 )
 
 type SensuCheckResult struct {
@@ -57,6 +63,7 @@ func main() {
 }
 
 func serveMetrics() {
+	prometheus.MustRegister(checkStatus)
 	metricPath := "/metrics"
 	http.Handle(metricPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -75,19 +82,9 @@ func getSensuResults(url string) error {
 	}
 	for i, result := range results {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
-		checkName := strings.Replace(result.Check.Name, "-", "_", -1)
-		elem, ok := metricsExported[checkName]
-		if ok {
-			elem.Set(float64(result.Check.Status))
-		} else {
-			gauge := prometheus.NewGauge(prometheus.GaugeOpts{
-				Name: checkName,
-				Help: "Sensu Check Status",
-			})
-			gauge.Set(float64(result.Check.Status))
-			prometheus.MustRegister(gauge)
-			metricsExported[checkName] = gauge
-		}
+		checkStatus.WithLabelValues(*sensuAPI,
+			result.Client,
+			result.Check.Name).Set(float64(result.Check.Status))
 	}
 	return nil
 }
