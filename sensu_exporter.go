@@ -20,7 +20,7 @@ var (
 		"Address to listen on for web interface and telemetry.",
 	)
 	sensuAPI = flag.String(
-		"api", "http://10.140.131.43:4567/results",
+		"api", "http://10.140.131.43:4567",
 		"Address to Sensu API.",
 	)
 	checkStatus = prometheus.NewGaugeVec(
@@ -75,7 +75,7 @@ func serveMetrics() {
 func getSensuResults(url string) error {
 	log.Infoln("getSensuResults", url)
 	results := []SensuCheckResult{}
-	err := getJson(url, &results)
+	err := getJson(url+"/results", &results)
 	if err != nil {
 		return err
 	}
