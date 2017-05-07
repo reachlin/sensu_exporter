@@ -50,6 +50,7 @@ type SensuCheck struct {
 
 func main() {
 
+	flag.Parse()
 	go serveMetrics()
 
 	for {
