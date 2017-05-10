@@ -1,4 +1,4 @@
-# sensu_exporter
+# sensu_exporter [![Build Status](https://travis-ci.org/reachlin/sensu_exporter.svg)][travis]
 
 A Prometheus exporter for Sensu.
 
