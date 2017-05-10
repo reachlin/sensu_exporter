@@ -3,3 +3,6 @@ sudo: false
 language: go
 go:
 - 1.7
+
+intall:
+  - go get -t ./...
