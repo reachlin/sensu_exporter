@@ -19,6 +19,7 @@ var (
 		"listen", ":9104",
 		"Address to listen on for web interface and telemetry.",
 	)
+	sleepTime = flag.Int("sleep", 10, "sleep seconds between cycles")
 	sensuAPI = flag.String(
 		"api", "http://10.140.131.43:4567",
 		"Address to Sensu API.",
@@ -58,7 +59,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		time.Sleep(3 * time.Second)
+		time.Sleep(sleepTime * time.Second)
 	}
 }
 
