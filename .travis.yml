@@ -5,4 +5,5 @@ go:
 - 1.7
 
 intall:
-  - go get -t ./...
+  - go get -u github.com/prometheus/promu
+  - go get github.com/prometheus/client_golang
