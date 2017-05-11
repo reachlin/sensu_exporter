@@ -17,7 +17,7 @@ var (
 	}
 	listenAddress = flag.String(
 		"listen", ":9104",
-		"Address to listen on for web interface and telemetry.",
+		"Address to listen on for serving Prometheus Metrics.",
 	)
 	sleepTime = flag.Int("sleep", 10, "sleep seconds between cycles")
 	sensuAPI = flag.String(
