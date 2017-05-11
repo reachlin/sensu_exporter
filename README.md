@@ -27,7 +27,7 @@ Usage of ./sensu_exporter:
 ## Exported Metrics
 | Metric | Meaning | Labels |
 | ------ | ------- | ------ |
-| sensu_check_status | Was the last query of Consul successful | server, client, check_name |
+| sensu_check_status | Check results in a metric vector, status 0 means OK | server, client, check_name |
 
 
 [travis]: https://travis-ci.org/reachlin/sensu_exporter
