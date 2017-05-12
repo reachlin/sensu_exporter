@@ -107,6 +107,7 @@ func NewSensuCollector(url string) *SensuCollector {
 			"sensu_check_status",
 			"Sensu Check Status(1:Up, 0:Down)",
 			[]string{"client", "check_name"},
+			nil,
 		),
 	}
 }
