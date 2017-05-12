@@ -22,7 +22,7 @@ var (
 		"listen", ":9251",
 		"Address to listen on for serving Prometheus Metrics.",
 	)
-	sensuAPI  = flag.String(
+	sensuAPI = flag.String(
 		"api", "http://localhost:4567",
 		"Address to Sensu API.",
 	)
@@ -46,8 +46,8 @@ type SensuCheck struct {
 
 // BEGIN: Class SensuCollector
 type SensuCollector struct {
-	apiUrl string
-	mutex sync.RWMutex
+	apiUrl      string
+	mutex       sync.RWMutex
 	CheckStatus *prometheus.Desc
 }
 
@@ -98,6 +98,7 @@ func (c *SensuCollector) GetJson(url string, obj interface{}) error {
 	defer resp.Body.Close()
 	return json.NewDecoder(resp.Body).Decode(obj)
 }
+
 // END: Class SensuCollector
 
 func NewSensuCollector(url string) *SensuCollector {
@@ -111,7 +112,6 @@ func NewSensuCollector(url string) *SensuCollector {
 		),
 	}
 }
-
 
 func main() {
 
