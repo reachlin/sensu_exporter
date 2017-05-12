@@ -17,9 +17,9 @@ make
 $ ./sensu_exporter --help
 Usage of ./sensu_exporter:
   -api string
-      Address to Sensu API. (default "http://10.140.131.43:4567")
+      Address to Sensu API. (default "http://localhost:4567")
   -listen string
-      Address to listen on for serving Prometheus Metrics. (default ":9104")
+      Address to listen on for serving Prometheus Metrics. (default ":9251")
   -sleep int
       sleep seconds between cycles (default 10)
 ```
@@ -27,7 +27,7 @@ Usage of ./sensu_exporter:
 ## Exported Metrics
 | Metric | Meaning | Labels |
 | ------ | ------- | ------ |
-| sensu_check_status | Check results in a metric vector, status 0 means OK | server, client, check_name |
+| sensu_check_status | Check results in a metric vector, status 1 means OK | client, check_name |
 
 
 [travis]: https://travis-ci.org/reachlin/sensu_exporter

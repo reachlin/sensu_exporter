@@ -16,20 +16,22 @@ var (
 		Timeout: 3 * time.Second,
 	}
 	listenAddress = flag.String(
-		"listen", ":9104",
+		// exporter port list:
+		// https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+		"listen", ":9251",
 		"Address to listen on for serving Prometheus Metrics.",
 	)
 	sleepTime = flag.Int("sleep", 10, "sleep seconds between cycles")
 	sensuAPI = flag.String(
-		"api", "http://10.140.131.43:4567",
+		"api", "http://localhost:4567",
 		"Address to Sensu API.",
 	)
 	checkStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "sensu_check_status",
-			Help: "Sensu Check Status(0:OK)",
+			Help: "Sensu Check Status(1:Up, 0:Down)",
 		},
-		[]string{"server", "client", "check_name"},
+		[]string{"client", "check_name"},
 	)
 )
 
@@ -83,9 +85,16 @@ func getSensuResults(url string) error {
 	}
 	for i, result := range results {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
-		checkStatus.WithLabelValues(*sensuAPI,
+		// in Sensu, 0 means OK
+		// in Prometheus, 1 means OK
+		status := 0
+		if result.Check.Status == 0
+			status = 1.0
+		else
+			status = 0.0
+		checkStatus.WithLabelValues(
 			result.Client,
-			result.Check.Name).Set(float64(result.Check.Status))
+			result.Check.Name).Set(status)
 	}
 	return nil
 }
