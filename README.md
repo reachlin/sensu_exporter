@@ -38,4 +38,5 @@ To run the sensu exporter as a Docker container, run:
 docker run -p 9251:9251 reachlin/sensu_exporter --api="http://sensu_host:4567"
 ```
 
+[hub]: https://hub.docker.com/r/reachlin/sensu_exporter/
 [travis]: https://travis-ci.org/reachlin/sensu_exporter
