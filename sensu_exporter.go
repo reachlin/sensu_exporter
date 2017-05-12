@@ -88,10 +88,11 @@ func getSensuResults(url string) error {
 		// in Sensu, 0 means OK
 		// in Prometheus, 1 means OK
 		status := 0
-		if result.Check.Status == 0
+		if result.Check.Status == 0 {
 			status = 1.0
-		else
+		} else {
 			status = 0.0
+		}
 		checkStatus.WithLabelValues(
 			result.Client,
 			result.Check.Name).Set(status)
