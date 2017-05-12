@@ -22,7 +22,7 @@ var (
 		"Address to listen on for serving Prometheus Metrics.",
 	)
 	sleepTime = flag.Int("sleep", 10, "sleep seconds between cycles")
-	sensuAPI = flag.String(
+	sensuAPI  = flag.String(
 		"api", "http://localhost:4567",
 		"Address to Sensu API.",
 	)
