@@ -28,4 +28,14 @@ Usage of ./sensu_exporter:
 | sensu_check_status | Check results in a metric vector, status 1 means OK | client, check_name |
 
 
+### Docker
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/reachlin/sensu_exporter.svg?maxAge=604800)][hub]
+
+To run the sensu exporter as a Docker container, run:
+
+```bash
+docker run -p 9251:9251 reachlin/sensu_exporter --api="http://sensu_host:4567"
+```
+
 [travis]: https://travis-ci.org/reachlin/sensu_exporter
