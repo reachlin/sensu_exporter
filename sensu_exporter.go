@@ -87,7 +87,7 @@ func getSensuResults(url string) error {
 		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
 		// in Sensu, 0 means OK
 		// in Prometheus, 1 means OK
-		status := 0
+		status := 0.0
 		if result.Check.Status == 0 {
 			status = 1.0
 		} else {
