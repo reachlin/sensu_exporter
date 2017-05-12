@@ -20,8 +20,6 @@ Usage of ./sensu_exporter:
       Address to Sensu API. (default "http://localhost:4567")
   -listen string
       Address to listen on for serving Prometheus Metrics. (default ":9251")
-  -sleep int
-      sleep seconds between cycles (default 10)
 ```
 
 ## Exported Metrics

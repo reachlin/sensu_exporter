@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,17 +22,9 @@ var (
 		"listen", ":9251",
 		"Address to listen on for serving Prometheus Metrics.",
 	)
-	sleepTime = flag.Int("sleep", 10, "sleep seconds between cycles")
 	sensuAPI  = flag.String(
 		"api", "http://localhost:4567",
 		"Address to Sensu API.",
-	)
-	checkStatus = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "sensu_check_status",
-			Help: "Sensu Check Status(1:Up, 0:Down)",
-		},
-		[]string{"client", "check_name"},
 	)
 )
 
@@ -51,40 +44,24 @@ type SensuCheck struct {
 	Interval    int
 }
 
-func main() {
-
-	flag.Parse()
-	go serveMetrics()
-
-	for {
-		err := getSensuResults(*sensuAPI)
-		if err != nil {
-			log.Fatal(err)
-		}
-		time.Sleep(time.Duration(*sleepTime) * time.Second)
-	}
+// BEGIN: Class SensuCollector
+type SensuCollector struct {
+	apiUrl string
+	mutex sync.RWMutex
+	CheckStatus *prometheus.Desc
 }
 
-func serveMetrics() {
-	prometheus.MustRegister(checkStatus)
-	metricPath := "/metrics"
-	http.Handle(metricPath, prometheus.Handler())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(metricPath))
-	})
-	log.Infoln("Listening on", *listenAddress)
-	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+func (c *SensuCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.CheckStatus
 }
 
-func getSensuResults(url string) error {
-	log.Infoln("getSensuResults", url)
-	results := []SensuCheckResult{}
-	err := getJson(url+"/results", &results)
-	if err != nil {
-		return err
-	}
+func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
+	c.mutex.Lock() // To protect metrics from concurrent collects.
+	defer c.mutex.Unlock()
+
+	results := c.getCheckResults()
 	for i, result := range results {
-		log.Infoln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
+		log.Debugln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
 		// in Sensu, 0 means OK
 		// in Prometheus, 1 means OK
 		status := 0.0
@@ -93,19 +70,63 @@ func getSensuResults(url string) error {
 		} else {
 			status = 0.0
 		}
-		checkStatus.WithLabelValues(
+		ch <- prometheus.MustNewConstMetric(
+			c.CheckStatus,
+			prometheus.GaugeValue,
+			status,
 			result.Client,
-			result.Check.Name).Set(status)
+			result.Check.Name
+		)
 	}
-	return nil
 }
 
-func getJson(url string, obj interface{}) error {
-	log.Infoln("getJson", url)
+func (c *SensuCollector) getCheckResults() []SensuCheckResult {
+	log.Debugln("Sensu API URL", c.apiUrl)
+	results := []SensuCheckResult{}
+	err := c.GetJson(c.apiUrl+"/results", &results)
+	if err != nil {
+		log.Errorln("Query Sensu failed.", fmt.Sprintf("%v", err))
+	}
+	return results
+}
+
+func (c *SensuCollector) GetJson(url string, obj interface{}) error {
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	return json.NewDecoder(resp.Body).Decode(obj)
+}
+// END: Class SensuCollector
+
+func NewSensuCollector(url string) *SensuCollector {
+	return &SensuCollector{
+		apiUrl: url,
+		CheckStatus: prometheus.NewDesc(
+			"sensu_check_status",
+			"Sensu Check Status(1:Up, 0:Down)",
+			[]string{"client", "check_name"},
+		),
+	}
+}
+
+
+func main() {
+
+	flag.Parse()
+	serveMetrics()
+
+}
+
+func serveMetrics() {
+	collector := NewSensuCollector(*sensuAPI)
+	prometheus.MustRegister(collector)
+	metricPath := "/metrics"
+	http.Handle(metricPath, prometheus.Handler())
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(metricPath))
+	})
+	log.Infoln("Listening on", *listenAddress)
+	log.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
