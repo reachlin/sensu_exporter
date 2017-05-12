@@ -75,7 +75,7 @@ func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
 			prometheus.GaugeValue,
 			status,
 			result.Client,
-			result.Check.Name
+			result.Check.Name,
 		)
 	}
 }
