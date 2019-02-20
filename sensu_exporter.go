@@ -14,7 +14,10 @@ import (
 
 var (
 	httpClient = &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout: time.Second * (time.Duration(*flag.Float64(
+			"timeout", 3,
+			"Timeout in seconds for the API request",
+		))),
 	}
 	listenAddress = flag.String(
 		// exporter port list:
