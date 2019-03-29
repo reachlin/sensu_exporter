@@ -6,19 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
 
 var (
-	httpClient = &http.Client{
-		Timeout: time.Second * (time.Duration(*flag.Float64(
-			"timeout", 3,
-			"Timeout in seconds for the API request",
-		))),
-	}
+	timeout       = flag.Duration("timeout", 20, "Timeout in seconds for the API request")
 	listenAddress = flag.String(
 		// exporter port list:
 		// https://github.com/prometheus/prometheus/wiki/Default-port-allocations
@@ -51,6 +45,7 @@ type SensuCheck struct {
 type SensuCollector struct {
 	apiUrl      string
 	mutex       sync.RWMutex
+	cli         *http.Client
 	CheckStatus *prometheus.Desc
 }
 
@@ -94,7 +89,7 @@ func (c *SensuCollector) getCheckResults() []SensuCheckResult {
 }
 
 func (c *SensuCollector) GetJson(url string, obj interface{}) error {
-	resp, err := httpClient.Get(url)
+	resp, err := c.cli.Get(url)
 	if err != nil {
 		return err
 	}
@@ -104,8 +99,9 @@ func (c *SensuCollector) GetJson(url string, obj interface{}) error {
 
 // END: Class SensuCollector
 
-func NewSensuCollector(url string) *SensuCollector {
+func NewSensuCollector(url string, cli *http.Client) *SensuCollector {
 	return &SensuCollector{
+		cli:    cli,
 		apiUrl: url,
 		CheckStatus: prometheus.NewDesc(
 			"sensu_check_status",
@@ -117,14 +113,12 @@ func NewSensuCollector(url string) *SensuCollector {
 }
 
 func main() {
-
 	flag.Parse()
-	serveMetrics()
 
-}
-
-func serveMetrics() {
-	collector := NewSensuCollector(*sensuAPI)
+	collector := NewSensuCollector(*sensuAPI, &http.Client{
+		Timeout: *timeout,
+	})
+	fmt.Println(collector.cli.Timeout)
 	prometheus.MustRegister(collector)
 	metricPath := "/metrics"
 	http.Handle(metricPath, prometheus.Handler())
