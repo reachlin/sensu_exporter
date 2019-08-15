@@ -74,6 +74,7 @@ func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
 			status,
 			result.Client,
 			result.Check.Name,
+			result.Check.Output,
 		)
 	}
 }
@@ -106,7 +107,7 @@ func NewSensuCollector(url string, cli *http.Client) *SensuCollector {
 		CheckStatus: prometheus.NewDesc(
 			"sensu_check_status",
 			"Sensu Check Status(1:Up, 0:Down)",
-			[]string{"client", "check_name"},
+			[]string{"client", "check_name", "check_message"},
 			nil,
 		),
 	}
