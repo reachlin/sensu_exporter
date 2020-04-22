@@ -62,11 +62,21 @@ func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
 		log.Debugln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
 		// in Sensu, 0 means OK
 		// in Prometheus, 1 means OK
+		// More here: https://docs.sensu.io/sensu-core/1.9/reference/checks/#sensu-check-specification
 		status := 0.0
+		severity := "warning"
 		if result.Check.Status == 0 {
 			status = 1.0
-		} else {
-			status = 0.0
+			severity = "ok"
+		}
+		if result.Check.Status == 1 {
+			severity = "warning"
+		}
+		if result.Check.Status == 2 {
+			severity = "critical"
+		}
+		if result.Check.Status > 2 {
+			severity = "unknown"
 		}
 		ch <- prometheus.MustNewConstMetric(
 			c.CheckStatus,
@@ -74,6 +84,8 @@ func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
 			status,
 			result.Client,
 			result.Check.Name,
+			result.Check.Output,
+			severity,
 		)
 	}
 }
@@ -106,7 +118,7 @@ func NewSensuCollector(url string, cli *http.Client) *SensuCollector {
 		CheckStatus: prometheus.NewDesc(
 			"sensu_check_status",
 			"Sensu Check Status(1:Up, 0:Down)",
-			[]string{"client", "check_name"},
+			[]string{"client", "check_name", "check_message", "check_severity"},
 			nil,
 		),
 	}
