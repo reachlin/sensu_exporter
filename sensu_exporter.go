@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
 
 var (
-	timeout       = flag.Duration("timeout", 20, "Timeout in seconds for the API request")
+	timeout       = flag.Duration("timeout", time.Second * 20, "Timeout for the API request")
 	listenAddress = flag.String(
 		// exporter port list:
 		// https://github.com/prometheus/prometheus/wiki/Default-port-allocations
