@@ -23,6 +23,7 @@ var (
 		"api", "http://localhost:4567",
 		"Address to Sensu API.",
 	)
+	cache = flag.Bool("cache", false, "Enable caching of results.  Reduces scrape time for large results datasets by pulling data between prometheus scrapes instead of blocking.")
 )
 
 type SensuCheckResult struct {
@@ -43,10 +44,12 @@ type SensuCheck struct {
 
 // BEGIN: Class SensuCollector
 type SensuCollector struct {
-	apiUrl      string
-	mutex       sync.RWMutex
-	cli         *http.Client
-	CheckStatus *prometheus.Desc
+	apiUrl        string
+	mutex         sync.RWMutex
+	cli           *http.Client
+	CheckStatus   *prometheus.Desc
+	enableCache   bool
+	cachedResults []SensuCheckResult
 }
 
 func (c *SensuCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -54,10 +57,22 @@ func (c *SensuCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
+	var results []SensuCheckResult
+
 	c.mutex.Lock() // To protect metrics from concurrent collects.
 	defer c.mutex.Unlock()
 
-	results := c.getCheckResults()
+	if c.enableCache {
+		if c.cachedResults == nil {
+			c.cachedResults = c.getCheckResults()
+		}
+		results = c.cachedResults
+		// Update cache results after each call to collect
+		go c.updateCache()
+	} else {
+		results = c.getCheckResults()
+	}
+
 	for i, result := range results {
 		log.Debugln("...", fmt.Sprintf("%d, %v, %v", i, result.Check.Name, result.Check.Status))
 		// in Sensu, 0 means OK
@@ -76,6 +91,12 @@ func (c *SensuCollector) Collect(ch chan<- prometheus.Metric) {
 			result.Check.Name,
 		)
 	}
+}
+
+func (c *SensuCollector) updateCache() {
+	c.mutex.Lock() // To protect metrics from concurrent collects.
+	defer c.mutex.Unlock()
+	c.cachedResults = c.getCheckResults()
 }
 
 func (c *SensuCollector) getCheckResults() []SensuCheckResult {
@@ -99,7 +120,7 @@ func (c *SensuCollector) GetJson(url string, obj interface{}) error {
 
 // END: Class SensuCollector
 
-func NewSensuCollector(url string, cli *http.Client) *SensuCollector {
+func NewSensuCollector(url string, cli *http.Client, enableCache bool) *SensuCollector {
 	return &SensuCollector{
 		cli:    cli,
 		apiUrl: url,
@@ -109,6 +130,7 @@ func NewSensuCollector(url string, cli *http.Client) *SensuCollector {
 			[]string{"client", "check_name"},
 			nil,
 		),
+		enableCache: enableCache,
 	}
 }
 
@@ -117,7 +139,7 @@ func main() {
 
 	collector := NewSensuCollector(*sensuAPI, &http.Client{
 		Timeout: *timeout,
-	})
+	}, *cache)
 	fmt.Println(collector.cli.Timeout)
 	prometheus.MustRegister(collector)
 	metricPath := "/metrics"
