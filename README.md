@@ -17,13 +17,13 @@ make
 $ ./sensu_exporter --help
 Usage of ./sensu_exporter:
   -api string
-    Address to Sensu API. (default "http://localhost:4567")
+      Address to Sensu API. (default "http://localhost:4567")
   -listen string
-    Address to listen on for serving Prometheus Metrics. (default ":9251")
+      Address to listen on for serving Prometheus Metrics. (default ":9251")
   -timeout duration
-    Timeout in seconds for the API request (default 20ns)
+      Timeout in seconds for the API request (default 20ns)
   -cache
-    Enable caching of results.  Reduces scrape time for large results datasets by pulling data between prometheus scrapes instead of blocking.
+      Enable caching of results.  Reduces scrape time for large results datasets by pulling data between prometheus scrapes instead of blocking.
 ```
 
 ## Exported Metrics
